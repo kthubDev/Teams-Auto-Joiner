@@ -60,7 +60,8 @@ class Team:
             try:
                 self.get_elem().click()
                 self.get_elem().find_element_by_css_selector("div.channels")
-            except (exceptions.NoSuchElementException, exceptions.ElementNotInteractableException, exceptions.ElementClickInterceptedException):
+            except (exceptions.NoSuchElementException, exceptions.ElementNotInteractableException,
+                    exceptions.ElementClickInterceptedException):
                 return None
 
     def get_channels(self):
@@ -121,7 +122,6 @@ class Meeting:
 
     def check_blacklist_calendar_meeting(self):
         if "blacklist_meeting_re" in config and config['blacklist_meeting_re'] != "":
-
             regex = config['blacklist_meeting_re']
             return True if re.search(regex, self.title) else False
 
@@ -199,7 +199,7 @@ def discord_notification(title, description):
     discord_webhook_url = config['discord_webhook_url']
     webhook = Webhook.from_url(discord_webhook_url, adapter=RequestsWebhookAdapter())
 
-    embed = Embed(title=f"{title}", description=f"{description}",colour=0x0011FF)
+    embed = Embed(title=f"{title}", description=f"{description}", colour=0x0011FF)
     embed.set_author(name="Ms-Teams-Auto-Joiner-Bot")
     embed.set_footer(text=f"\nTime: [{datetime.now():%Y:%m:%d-%H:%M:%S}]\nlogin-id: {config['email']}")
 
@@ -244,7 +244,7 @@ def change_organisation(org_num):
     profile_button.click()
 
     # Find and click the organisation with the right id
-    change_org_button = wait_until_found(f"li.tenant-list-item[aria-posinset='{org_num+1}", 10)
+    change_org_button = wait_until_found(f"li.tenant-list-item[aria-posinset='{org_num + 1}", 10)
     if change_org_button is None:
         print("Something went wrong while changing the organisation")
         return
@@ -430,20 +430,20 @@ def join_meeting(meeting):
         active_correlation_id = ""
 
     # turn camera off
-    video_btn = browser.find_element_by_css_selector("toggle-button[data-tid='toggle-video']>div>button")
+    video_btn = browser.find_element(by=By.CSS_SELECTOR, value="toggle-button[data-tid='toggle-video']>div>button")
     video_is_on = video_btn.get_attribute("aria-pressed")
     if video_is_on == "true":
         video_btn.click()
         print("Video disabled")
 
     # turn mic off
-    audio_btn = browser.find_element_by_css_selector("toggle-button[data-tid='toggle-mute']>div>button")
+    audio_btn = browser.find_element(by=By.CSS_SELECTOR, value="toggle-button[data-tid='toggle-mute']>div>button")
     audio_is_on = audio_btn.get_attribute("aria-pressed")
     if audio_is_on == "true":
         audio_btn.click()
         print("Microphone off")
 
-    if 'random_delay' in config: 
+    if 'random_delay' in config:
         if isinstance(config['random_delay'], bool):
             print(f"Please update the random_delay in config.json file as per latest instructions in README")
             if config['random_delay']:
@@ -451,8 +451,8 @@ def join_meeting(meeting):
             else:
                 delay = 0
         else:
-            delay = random.randrange(config['random_delay'][0], config['random_delay'][1] + 1 , 1)
-        
+            delay = random.randrange(config['random_delay'][0], config['random_delay'][1] + 1, 1)
+
         if delay > 0:
             print(f"Wating for {delay}s")
             time.sleep(delay)
@@ -499,7 +499,7 @@ def join_meeting(meeting):
 def get_meeting_members():
     global current_meeting
 
-    meeting_elems = browser.find_elements_by_css_selector(".one-call")
+    meeting_elems = browser.find_element(by=By.CSS_SELECTOR, value=".one-call")
 
     # meeting has been closed by host
     if len(meeting_elems) == 0:
@@ -523,8 +523,10 @@ def get_meeting_members():
         print("Failed to open meeting member page")
         return None
 
-    participants_elem = wait_until_found("calling-roster-section[section-key='participantsInCall'] .roster-list-title", 2, print_error=False)
-    attendees_elem = wait_until_found("calling-roster-section[section-key='attendeesInMeeting'] .roster-list-title", 2, print_error=False)
+    participants_elem = wait_until_found("calling-roster-section[section-key='participantsInCall'] .roster-list-title",
+                                         2, print_error=False)
+    attendees_elem = wait_until_found("calling-roster-section[section-key='attendeesInMeeting'] .roster-list-title", 2,
+                                      print_error=False)
 
     if participants_elem is None and attendees_elem is None:
         print("Failed to get meeting members")
@@ -562,7 +564,7 @@ def hangup():
 
     try:
         switch_to_teams_tab()
-        hangup_btn = browser.find_element_by_css_selector("button[data-tid='call-hangup']")
+        hangup_btn = browser.find_element(by=By.CSS_SELECTOR, value="button[data-tid='call-hangup']")
         hangup_btn.click()
 
         print(f"Left Meeting: {current_meeting.title}")
@@ -650,10 +652,10 @@ def main():
         keep_logged_in = wait_until_found("input[id='idBtn_Back']", 5)
         if keep_logged_in is not None:
             keep_logged_in.click()
-            discord_notification("Logged in successfully","  ")
+            discord_notification("Logged in successfully", "  ")
         else:
             print("Login Unsuccessful, recheck entries in config.json")
-            discord_notification("Login Unsuccessful"," recheck entries in config.json")
+            discord_notification("Login Unsuccessful", " recheck entries in config.json")
 
         use_web_instead = wait_until_found(".use-app-lnk", 5, print_error=False)
         if use_web_instead is not None:
@@ -698,7 +700,8 @@ def main():
 
         if len(teams) == 0:
             print("No Teams found, is MS Teams in list mode? (switch to mode 3 if you only want calendar meetings)")
-            discord_notification("No Teams found", "is MS Teams in list mode? (switch to mode 3 if you only want calendar meetings)")
+            discord_notification("No Teams found",
+                                 "is MS Teams in list mode? (switch to mode 3 if you only want calendar meetings)")
             exit(1)
 
         print()
@@ -723,7 +726,8 @@ def main():
 
                 if len(teams) == 0:
                     print("Nothing found, is Teams in list mode?")
-                    discord_notification("No Teams found", "is MS Teams in list mode? (switch to mode 3 if you only want calendar meetings)")
+                    discord_notification("No Teams found",
+                                         "is MS Teams in list mode? (switch to mode 3 if you only want calendar meetings)")
                     exit(1)
                 else:
                     get_meetings(teams)
